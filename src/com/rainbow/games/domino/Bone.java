@@ -10,8 +10,6 @@ public class Bone {
             new Bone(2, 3), new Bone(2, 4), new Bone(2, 5), new Bone(2, 6), new Bone(3, 3), new Bone(3, 4), new Bone(3, 5),
             new Bone(3, 6), new Bone(4, 4), new Bone(4, 5), new Bone(4, 6), new Bone(5, 5), new Bone(5, 6), new Bone(6, 6),
     };
-
-
     private int top;
     private int bottom;
 
@@ -42,5 +40,9 @@ public class Bone {
     @Override
     public String toString() {
         return String.format("Bone(%s, %s)", top, bottom);
+    }
+
+    public enum Side {
+        TOP, BOTTOM, BOTH, NONE;
     }
 }

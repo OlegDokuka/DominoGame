@@ -1,9 +1,6 @@
 package com.rainbow.games.domino;
 
-import com.sun.istack.internal.NotNull;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by olehd on 23.12.2015.
@@ -16,14 +13,25 @@ public class PathFinder {
         List<BoneGraph> bestResult = new ArrayList<>();
 
         for (BoneGraph graph : availableCombinations) {
-            List<BoneGraph> result = moveToNext(graph);
+            {
+                graph.setSideState(Bone.Side.BOTTOM);
+                List<BoneGraph> result = moveToNext(graph);
 
-            if (result.size() > bestResult.size()) {
-                bestResult = result;
+                if (result.size() > bestResult.size()) {
+                    bestResult = result;
+                }
+            }
+            {
+                graph.setSideState(Bone.Side.TOP);
+                List<BoneGraph> result = moveToNext(graph);
+
+                if (result.size() > bestResult.size()) {
+                    bestResult = result;
+                }
             }
         }
 
-        return null; //todo fix it
+        return bestResult.stream().map(BoneGraph::getBone).toArray(Bone[]::new);
     }
 
     private List<BoneGraph> moveToNext(BoneGraph graph) {
@@ -34,6 +42,14 @@ public class PathFinder {
         graph.setAvailable(false);
 
         for (BoneGraph boneGraph : available) {
+            boneGraph.setSideState(
+                    BoneUtils.reverseSide(
+                            BoneUtils.getSuitableSide(
+                                    boneGraph.getBone(),
+                                    BoneUtils.getBoneValue(graph.getBone(), graph.getSideState())
+                            )
+                    )
+            );
             List<BoneGraph> localResult = moveToNext(boneGraph);
 
             if (localResult.size() > result.size()) {
@@ -42,6 +58,7 @@ public class PathFinder {
         }
 
         graph.setAvailable(true);
+        graph.setSideState(Bone.Side.BOTH);
         result.add(0, graph);
 
         return result;
@@ -64,55 +81,7 @@ public class PathFinder {
     private void findSuitable(BoneGraph bone, BoneGraph[] allBones) {
         Arrays.stream(allBones)
                 .filter(item -> !bone.equals(item))
-                .filter(item -> BoneUtils.isSuitable(item.getBone(), bone.getBone()))
+                .filter(item -> BoneUtils.isSuitable(item.getBone(), bone.getBone(), Bone.Side.BOTH, Bone.Side.BOTH))
                 .forEach(bone::add);
-    }
-
-    private class BoneGraph implements Comparable<BoneGraph> {
-        private int linksCount = 0;
-        private boolean isAvailable = true;
-        private Bone bone;
-        private Set<BoneGraph> linkedBones = new HashSet<>();
-
-        BoneGraph(Bone bone) {
-            this.bone = bone;
-            this.linksCount = linkedBones.size();
-        }
-
-        public boolean add(@NotNull BoneGraph bone) {
-            return linkedBones.add(bone);
-        }
-
-        @Override
-        public int compareTo(BoneGraph o) {
-            return Integer.compare(linksCount, o.linksCount);
-        }
-
-        public Bone getBone() {
-            return bone;
-        }
-
-        public Set<BoneGraph> getAvailableLinkedBones() {
-            return linkedBones.stream().filter(BoneGraph::isAvailable).collect(Collectors.toSet());
-        }
-
-        public boolean isAvailable() {
-            return isAvailable;
-        }
-
-        public void setAvailable(boolean available) {
-            isAvailable = available;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj != null && obj instanceof BoneGraph) {
-                BoneGraph graph = (BoneGraph) obj;
-
-                return graph.bone.equals(bone);
-            }
-
-            return false;
-        }
     }
 }

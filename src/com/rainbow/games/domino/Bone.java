@@ -43,6 +43,6 @@ public class Bone {
     }
 
     public enum Side {
-        TOP, BOTTOM, BOTH, NONE;
+        TOP, BOTTOM, BOTH, NONE
     }
 }
